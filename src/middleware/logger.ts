@@ -12,7 +12,6 @@ export function logger(write: (line: string) => void = console.log): RequestHand
       write(`${req.method} ${req.originalUrl} ${res.statusCode} ${ms.toFixed(2)}ms`);
     };
 
-    // "close" covers clients that disconnect before the response finishes.
     res.on("finish", log);
     res.on("close", log);
     next();

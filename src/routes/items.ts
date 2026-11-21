@@ -59,7 +59,6 @@ export function itemsRouter(store: ItemStore): Router {
     res.status(201).location(`${req.baseUrl}/${item.id}`).json(item);
   });
 
-  // PUT replaces the whole resource, so every required field must be sent.
   router.put("/:id", (req, res) => {
     if (!store.get(req.params.id)) throw new HttpError(404, `Item ${req.params.id} not found`);
     const item = store.update(req.params.id, validate(req.body, false));
