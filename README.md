@@ -35,6 +35,23 @@ npm test
 npm run typecheck
 ```
 
+## Deploy to Vercel
+
+`src/app.ts` default-exports the Express app, which Vercel detects automatically.
+
+1. Import the GitHub repo at [vercel.com/new](https://vercel.com/new).
+2. Keep the detected settings (no build command or output directory needed) and click **Deploy**.
+
+Or with the CLI:
+
+```bash
+npm i -g vercel
+vercel        # preview
+vercel --prod # production
+```
+
+The store is in memory, so on Vercel items reset whenever a function instance cold-starts, and separate instances don't share data. Use a database if you need data to persist.
+
 ## Request logging
 
 Every request is logged when the response finishes:

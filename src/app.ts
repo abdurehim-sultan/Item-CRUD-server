@@ -34,3 +34,5 @@ export function createApp({ store = new ItemStore(), log }: AppOptions = {}): Ex
 
   return app;
 }
+
+export default createApp();
