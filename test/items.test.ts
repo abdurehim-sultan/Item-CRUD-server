@@ -103,6 +103,21 @@ describe("/items CRUD", () => {
   });
 });
 
+describe("web UI", () => {
+  it("serves the dashboard at /", async () => {
+    const res = await req("GET", "/");
+    assert.equal(res.status, 200);
+    assert.match(res.headers.get("content-type") ?? "", /text\/html/);
+    assert.match(await res.text(), /Items Studio/);
+  });
+
+  it("seeds sample items when asked", async () => {
+    const seeded = new ItemStore();
+    createApp({ store: seeded, seed: true });
+    assert.equal(seeded.list().length, 3);
+  });
+});
+
 describe("fallbacks and logging", () => {
   it("returns a JSON 404 for unknown routes", async () => {
     const res = await req("GET", "/does-not-exist");

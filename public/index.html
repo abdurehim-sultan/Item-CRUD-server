@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Items Studio · Express CRUD API</title>
+    <meta name="description" content="Create, edit and delete items through a live Express 5 + TypeScript REST API." />
+    <meta name="theme-color" content="#0b0d17" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 11h14M9 16h14M9 21h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bg-glow" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h9" /></svg>
+        </span>
+        <div>
+          <h1>Items Studio</h1>
+          <p>Express 5 · TypeScript · REST</p>
+        </div>
+      </div>
+      <div class="status-pill" id="health" data-state="checking">
+        <span class="dot"></span><span class="label">Checking API…</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="hero">
+        <h2>Manage your catalog <span class="gradient-text">in real time</span></h2>
+        <p>Every action below is a real request to the <code>/items</code> API. Watch the status codes and response times stream into the request log.</p>
+      </section>
+
+      <section class="stats" aria-label="Catalog summary">
+        <article class="stat">
+          <span class="stat-label">Items</span>
+          <strong class="stat-value" id="stat-count">–</strong>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Catalog value</span>
+          <strong class="stat-value" id="stat-total">–</strong>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Average price</span>
+          <strong class="stat-value" id="stat-avg">–</strong>
+        </article>
+        <article class="stat">
+          <span class="stat-label">Last response</span>
+          <strong class="stat-value" id="stat-latency">–</strong>
+        </article>
+      </section>
+
+      <div class="grid">
+        <section class="card form-card" aria-labelledby="create-title">
+          <div class="card-head">
+            <h3 id="create-title">New item</h3>
+            <span class="method-tag post">POST</span>
+          </div>
+          <form id="create-form" novalidate>
+            <label class="field">
+              <span>Name</span>
+              <input name="name" type="text" placeholder="e.g. Wireless Mouse" autocomplete="off" maxlength="120" />
+            </label>
+            <label class="field">
+              <span>Description <em>optional</em></span>
+              <textarea name="description" rows="3" placeholder="What makes it special?" maxlength="500"></textarea>
+            </label>
+            <label class="field">
+              <span>Price (USD)</span>
+              <input name="price" type="number" step="0.01" min="0" placeholder="0.00" inputmode="decimal" />
+            </label>
+            <ul class="form-errors" id="create-errors" hidden></ul>
+            <button class="btn btn-primary" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              <span>Create item</span>
+            </button>
+          </form>
+        </section>
+
+        <section class="card list-card" aria-labelledby="list-title">
+          <div class="card-head">
+            <h3 id="list-title">Catalog</h3>
+            <span class="method-tag get">GET</span>
+          </div>
+          <div class="toolbar">
+            <label class="search">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+              <input id="search" type="search" placeholder="Search items" aria-label="Search items" />
+            </label>
+            <select id="sort" aria-label="Sort items">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="name">Name A–Z</option>
+            </select>
+            <button class="btn btn-ghost icon-only" id="refresh" type="button" aria-label="Refresh list" title="Refresh">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg>
+            </button>
+          </div>
+
+          <div id="list-state" class="list-state" data-state="loading">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+          </div>
+          <ul id="items" class="items" hidden></ul>
+        </section>
+      </div>
+
+      <section class="card console-card" aria-labelledby="console-title">
+        <div class="card-head">
+          <h3 id="console-title">Request log</h3>
+          <button class="btn btn-ghost btn-sm" id="clear-log" type="button">Clear</button>
+        </div>
+        <ol id="log" class="log" aria-live="polite"></ol>
+        <p class="log-empty" id="log-empty">Requests you make will appear here with method, path, status and response time.</p>
+      </section>
+
+      <section class="card docs-card" aria-labelledby="docs-title">
+        <div class="card-head">
+          <h3 id="docs-title">Endpoints</h3>
+        </div>
+        <div class="endpoints">
+          <div class="endpoint"><span class="method-tag get">GET</span><code>/items</code><span>List all items · 200</span></div>
+          <div class="endpoint"><span class="method-tag get">GET</span><code>/items/:id</code><span>Fetch one · 200 / 404</span></div>
+          <div class="endpoint"><span class="method-tag post">POST</span><code>/items</code><span>Create · 201 / 400 / 415 / 422</span></div>
+          <div class="endpoint"><span class="method-tag put">PUT</span><code>/items/:id</code><span>Replace · 200 / 404 / 422</span></div>
+          <div class="endpoint"><span class="method-tag patch">PATCH</span><code>/items/:id</code><span>Partial update · 200 / 404 / 422</span></div>
+          <div class="endpoint"><span class="method-tag delete">DELETE</span><code>/items/:id</code><span>Remove · 204 / 404</span></div>
+        </div>
+        <pre class="snippet"><code id="curl-snippet">curl -X POST /items -H 'Content-Type: application/json' -d '{"name":"Widget","price":9.99}'</code></pre>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Data lives in server memory and resets when the server restarts.</p>
+    </footer>
+
+    <dialog id="edit-dialog" class="dialog">
+      <form id="edit-form" method="dialog" novalidate>
+        <div class="card-head">
+          <h3>Edit item</h3>
+          <span class="method-tag patch">PATCH</span>
+        </div>
+        <label class="field">
+          <span>Name</span>
+          <input name="name" type="text" maxlength="120" />
+        </label>
+        <label class="field">
+          <span>Description</span>
+          <textarea name="description" rows="3" maxlength="500"></textarea>
+        </label>
+        <label class="field">
+          <span>Price (USD)</span>
+          <input name="price" type="number" step="0.01" min="0" inputmode="decimal" />
+        </label>
+        <ul class="form-errors" id="edit-errors" hidden></ul>
+        <div class="dialog-actions">
+          <button class="btn btn-ghost" type="button" value="cancel" id="edit-cancel">Cancel</button>
+          <button class="btn btn-primary" type="submit" value="save">Save changes</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="delete-dialog" class="dialog dialog-sm">
+      <form method="dialog">
+        <div class="danger-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" /></svg>
+        </div>
+        <h3>Delete this item?</h3>
+        <p id="delete-name" class="muted"></p>
+        <div class="dialog-actions">
+          <button class="btn btn-ghost" value="cancel">Cancel</button>
+          <button class="btn btn-danger" value="confirm">Delete</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="toasts" id="toasts" aria-live="assertive"></div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

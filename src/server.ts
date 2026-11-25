@@ -3,7 +3,7 @@ import { createApp } from "./app.js";
 const port = Number(process.env.PORT ?? 4317);
 const host = process.env.HOST ?? "0.0.0.0";
 
-const server = createApp().listen(port, host, () => {
+const server = createApp({ seed: true }).listen(port, host, () => {
   console.log(`Items API listening on http://${host === "0.0.0.0" ? "localhost" : host}:${port}`);
 });
 

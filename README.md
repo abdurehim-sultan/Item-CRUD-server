@@ -8,6 +8,9 @@ Features:
 - Custom logger middleware that prints `METHOD path status time` for every request
 - JSON 404 fallback for unknown routes and a central error handler
 - Input validation (`422`), malformed JSON (`400`), wrong content type (`415`)
+- **Items Studio** web dashboard at `/` for creating, editing, searching and deleting items, with a live request log showing each call's status code and response time
+
+The server starts with three sample items so the dashboard isn't empty.
 
 ## Requirements
 
@@ -22,7 +25,7 @@ npm run dev        # watch mode with tsx
 npm run build && npm start
 ```
 
-The server listens on `http://localhost:4317` by default. Override with `PORT` and `HOST`:
+Open `http://localhost:4317` for the dashboard. The server listens on port 4317 by default. Override with `PORT` and `HOST`:
 
 ```bash
 PORT=5000 npm run dev
@@ -223,6 +226,10 @@ src/
   routes/items.ts        # /items CRUD router and validation
   middleware/logger.ts   # request logger
   middleware/errors.ts   # 404 fallback and error handler
+public/
+  index.html             # Items Studio dashboard
+  styles.css
+  app.js                 # dashboard logic (calls the /items API)
 test/
   items.test.ts          # node:test integration tests
 ```
