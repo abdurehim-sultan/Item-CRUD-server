@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Items Studio · Express CRUD API</title>
     <meta name="description" content="Create, edit and delete items through a live Express 5 + TypeScript REST API." />
-    <meta name="theme-color" content="#0b0d17" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%237c5cff'/><path d='M9 11h14M9 16h14M9 21h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/></svg>" />
+    <meta name="theme-color" content="#f3e9d8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%238b5a2b'/><path d='M9 11h14M9 16h14M9 21h9' stroke='white' stroke-width='2.5' stroke-linecap='round'/></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -31,12 +31,12 @@
     </header>
 
     <main class="layout">
-      <section class="hero">
+      <section class="hero reveal" style="--i: 0">
         <h2>Manage your catalog <span class="gradient-text">in real time</span></h2>
         <p>Every action below is a real request to the <code>/items</code> API. Watch the status codes and response times stream into the request log.</p>
       </section>
 
-      <section class="stats" aria-label="Catalog summary">
+      <section class="stats reveal" style="--i: 1" aria-label="Catalog summary">
         <article class="stat">
           <span class="stat-label">Items</span>
           <strong class="stat-value" id="stat-count">–</strong>
@@ -55,7 +55,7 @@
         </article>
       </section>
 
-      <div class="grid">
+      <div class="grid reveal" style="--i: 2">
         <section class="card form-card" aria-labelledby="create-title">
           <div class="card-head">
             <h3 id="create-title">New item</h3>
@@ -113,7 +113,7 @@
         </section>
       </div>
 
-      <section class="card console-card" aria-labelledby="console-title">
+      <section class="card console-card reveal" style="--i: 3" aria-labelledby="console-title">
         <div class="card-head">
           <h3 id="console-title">Request log</h3>
           <button class="btn btn-ghost btn-sm" id="clear-log" type="button">Clear</button>
@@ -122,7 +122,7 @@
         <p class="log-empty" id="log-empty">Requests you make will appear here with method, path, status and response time.</p>
       </section>
 
-      <section class="card docs-card" aria-labelledby="docs-title">
+      <section class="card docs-card reveal" style="--i: 4" aria-labelledby="docs-title">
         <div class="card-head">
           <h3 id="docs-title">Endpoints</h3>
         </div>

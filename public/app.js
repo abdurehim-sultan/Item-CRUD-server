@@ -28,17 +28,55 @@ const els = {
 
 const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const palette = [
-  ["#7c5cff", "#5b8cff"],
-  ["#22d3ee", "#0ea5e9"],
-  ["#f472b6", "#a855f7"],
-  ["#34d399", "#10b981"],
-  ["#fbbf24", "#f97316"],
-  ["#f87171", "#ec4899"],
+  ["#8b5a2b", "#c48a54"],
+  ["#6b4220", "#a0673a"],
+  ["#a0522d", "#d2915a"],
+  ["#7a5c43", "#b8977a"],
+  ["#5f6b3a", "#9aa35c"],
+  ["#9c4a2f", "#cf7f52"],
 ];
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 let items = [];
 let editingId = null;
 let flashId = null;
+const renderedIds = new Set();
+
+function animateNumber(el, to, format) {
+  const from = Number(el.dataset.value ?? 0);
+  el.dataset.value = String(to);
+  if (from === to && el.textContent !== "–") return;
+  if (reducedMotion) {
+    el.textContent = format(to);
+    return;
+  }
+  const duration = 700;
+  const start = performance.now();
+  const step = (now) => {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = format(from + (to - from) * eased);
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+  el.classList.remove("bump");
+  void el.offsetWidth;
+  el.classList.add("bump");
+}
+
+document.addEventListener("pointerdown", (e) => {
+  const btn = e.target.closest(".btn");
+  if (!btn || btn.disabled || reducedMotion) return;
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 2;
+  const ripple = document.createElement("span");
+  ripple.className = "ripple";
+  ripple.style.width = ripple.style.height = `${size}px`;
+  ripple.style.left = `${e.clientX - rect.left - size / 2}px`;
+  ripple.style.top = `${e.clientY - rect.top - size / 2}px`;
+  btn.append(ripple);
+  ripple.addEventListener("animationend", () => ripple.remove());
+});
 
 class ApiError extends Error {
   constructor(status, message, details) {
@@ -63,7 +101,7 @@ async function api(method, path, body) {
   }
   const ms = performance.now() - start;
   logRequest(method, path, res.status, ms);
-  els.latency.textContent = `${Math.round(ms)} ms`;
+  animateNumber(els.latency, Math.round(ms), (v) => `${Math.round(v)} ms`);
 
   if (res.status === 204) return null;
   const data = await res.json().catch(() => null);
@@ -202,9 +240,9 @@ function visibleItems() {
 
 function renderStats() {
   const total = items.reduce((sum, i) => sum + i.price, 0);
-  els.count.textContent = String(items.length);
-  els.total.textContent = money.format(total);
-  els.avg.textContent = items.length ? money.format(total / items.length) : money.format(0);
+  animateNumber(els.count, items.length, (v) => String(Math.round(v)));
+  animateNumber(els.total, total, (v) => money.format(v));
+  animateNumber(els.avg, items.length ? total / items.length : 0, (v) => money.format(v));
 }
 
 function renderEmpty({ error = false, title, text, action }) {
@@ -237,10 +275,18 @@ function renderList() {
 
   els.listState.hidden = true;
   els.list.hidden = false;
+  let entering = 0;
   els.list.replaceChildren(
     ...list.map((item) => {
       const li = document.createElement("li");
-      li.className = `item${item.id === flashId ? " flash" : ""}`;
+      li.className = "item";
+      li.dataset.id = item.id;
+      if (!renderedIds.has(item.id)) {
+        li.classList.add("enter");
+        li.style.setProperty("--i", String(entering++));
+        renderedIds.add(item.id);
+      }
+      if (item.id === flashId) li.classList.add("flash");
 
       const body = document.createElement("div");
       body.className = "item-body";
@@ -384,7 +430,13 @@ function confirmDelete(item) {
       if (els.deleteDialog.returnValue !== "confirm") return;
       try {
         await api("DELETE", `/items/${item.id}`);
+        const row = els.list.querySelector(`[data-id="${item.id}"]`);
+        if (row && !reducedMotion) {
+          row.classList.add("removing");
+          await new Promise((r) => setTimeout(r, 300));
+        }
         items = items.filter((i) => i.id !== item.id);
+        renderedIds.delete(item.id);
         renderList();
         toast(`Deleted “${item.name}”`);
       } catch (err) {
